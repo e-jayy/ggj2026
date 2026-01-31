@@ -10,9 +10,13 @@ public class PlayerJump : MonoBehaviour
     public float fallMultiplier = 2.5f;
     public float lowJumpMultiplier = 2f;
 
-    [Header("Collider Shift Settings")]
+    [Header("Crouch Settings")]
     public Vector2 crouchOffset = new Vector2(0f, -0.25f);
     public Vector2 crouchSize = new Vector2(1f, 0.5f);
+    public float maxCrouchTime = 2f;
+
+    [Header("Animator")]
+    public Animator animator; // Drag your player animator here
 
     private Rigidbody2D rb;
     private BoxCollider2D boxCollider;
@@ -20,9 +24,13 @@ public class PlayerJump : MonoBehaviour
     private bool isGrounded = false;
     private float jumpBufferCounter;
 
-    // Store original collider values
+    // Collider backup
     private Vector2 originalOffset;
     private Vector2 originalSize;
+
+    // Crouch state
+    private bool isCrouching = false;
+    private float crouchTimer = 0f;
 
     void Start()
     {
@@ -63,8 +71,72 @@ public class PlayerJump : MonoBehaviour
             rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1f) * Time.deltaTime;
         }
 
-        // --- Shift Collider Change ---
-        HandleColliderShift();
+        // --- Handle Crouch ---
+        HandleCrouch();
+
+        // --- Update Animator ---
+        UpdateAnimator();
+    }
+
+    private void HandleCrouch()
+    {
+        if (isGrounded)
+        {
+            // Press Shift → start crouch
+            if (Input.GetKeyDown(KeyCode.LeftShift) && !isCrouching)
+            {
+                StartCrouch();
+            }
+
+            if (isCrouching)
+            {
+                crouchTimer += Time.deltaTime;
+
+                // Release early → stand up
+                if (Input.GetKeyUp(KeyCode.LeftShift))
+                {
+                    StopCrouch();
+                }
+                // Max crouch time reached → stand up
+                else if (crouchTimer >= maxCrouchTime)
+                {
+                    StopCrouch();
+                }
+            }
+        }
+        else if (isCrouching)
+        {
+            // If in air, automatically stand
+            StopCrouch();
+        }
+    }
+
+    private void StartCrouch()
+    {
+        isCrouching = true;
+        crouchTimer = 0f;
+
+        boxCollider.offset = crouchOffset;
+        boxCollider.size = crouchSize;
+    }
+
+    private void StopCrouch()
+    {
+        isCrouching = false;
+
+        boxCollider.offset = originalOffset;
+        boxCollider.size = originalSize;
+    }
+
+    private void UpdateAnimator()
+    {
+        if (animator == null) return;
+
+        // Jumping animation: if player is moving upward
+        animator.SetBool("isJumping", !isGrounded);
+
+        // Crouching animation
+        animator.SetBool("isCrouching", isCrouching);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -72,20 +144,6 @@ public class PlayerJump : MonoBehaviour
         if (other.CompareTag("Obstacle"))
         {
             Debug.Log("Player has died");
-        }
-    }
-
-    void HandleColliderShift()
-    {
-        if (Input.GetKey(KeyCode.LeftShift) && isGrounded)
-        {
-            boxCollider.offset = crouchOffset;
-            boxCollider.size = crouchSize;
-        }
-        else
-        {
-            boxCollider.offset = originalOffset;
-            boxCollider.size = originalSize;
         }
     }
 
