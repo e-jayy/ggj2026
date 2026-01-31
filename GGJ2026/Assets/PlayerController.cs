@@ -68,12 +68,12 @@ public class PlayerJump : MonoBehaviour
     }
 
     private void OnTriggerEnter2D(Collider2D other)
-{
-    if (other.CompareTag("Obstacle"))
     {
-        Debug.Log("Player has died");
+        if (other.CompareTag("Obstacle"))
+        {
+            Debug.Log("Player has died");
+        }
     }
-}
 
     void HandleColliderShift()
     {
