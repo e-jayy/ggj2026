@@ -6,6 +6,7 @@ public class ScoreManager : MonoBehaviour
     public int score = 0;
 
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI finalScoreText;
 
     private float timer = 0f;
 
@@ -29,5 +30,6 @@ public class ScoreManager : MonoBehaviour
     void UpdateScoreText()
     {
         scoreText.text = "Score: " + score;
+        finalScoreText.text = "Final Score: " + score;
     }
 }

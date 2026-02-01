@@ -10,8 +10,18 @@ public class SceneLoader : MonoBehaviour
         Time.timeScale = 1f;
     }
 
+    public void LoadCutscene()
+    {
+        SceneManager.LoadScene("Cutscene");
+    }
+
     public void LoadMainMenu()
     {
         SceneManager.LoadScene("MainMenu");
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }
